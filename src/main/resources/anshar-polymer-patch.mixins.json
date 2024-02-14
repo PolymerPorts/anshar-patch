@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "eu.pb4.ansharpatch.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "DisableComponentSyncMixin",
+    "ModRegistriationMixin",
+    "PlayerTransportComponentMixin",
+    "ServerPlayerEntityMixin",
+    "TransportEffectsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

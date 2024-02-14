@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "anshar-polymer-patch",
+	"version": "${version}",
+	"name": "Anshar Polymer Patch",
+	"description": "Polymer Patch for the Anshar mod by hama Industries",
+	"authors": [
+		"Patbox"
+	],
+	"contact": {
+		"homepage": "https://pb4.eu",
+		"sources": "https://github.com/PolymerPorts/anshar-patch"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/anshar-polymer-patch/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"eu.pb4.ansharpatch.AnsharPolymerPatch"
+		]
+	},
+	"mixins": [
+		"anshar-polymer-patch.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"anshar": ">=0.0.15",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
