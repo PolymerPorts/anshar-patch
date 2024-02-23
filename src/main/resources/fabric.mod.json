@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "anshar-polymer-patch",
 	"version": "${version}",
-	"name": "Anshar Polymer Patch",
+	"name": "Polymer Patch for Anshar",
 	"description": "Polymer Patch for the Anshar mod by hama Industries",
 	"authors": [
 		"Patbox"
@@ -11,7 +11,7 @@
 		"homepage": "https://pb4.eu",
 		"sources": "https://github.com/PolymerPorts/anshar-patch"
 	},
-	"license": "CC0-1.0",
+	"license": "LGPLv3",
 	"icon": "assets/anshar-polymer-patch/icon.png",
 	"environment": "*",
 	"entrypoints": {

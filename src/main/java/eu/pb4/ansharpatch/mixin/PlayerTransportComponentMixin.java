@@ -3,6 +3,8 @@ package eu.pb4.ansharpatch.mixin;
 import com.lgmrszd.anshar.beacon.BeaconNode;
 import com.lgmrszd.anshar.frequency.FrequencyNetwork;
 import com.lgmrszd.anshar.transport.PlayerTransportComponent;
+import com.lgmrszd.anshar.transport.TransportEffects;
+import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
@@ -10,15 +12,25 @@ import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.entity.EntityStatuses;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.FireworkRocketItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -35,9 +47,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Mixin(PlayerTransportComponent.class)
@@ -67,6 +77,8 @@ public abstract class PlayerTransportComponentMixin implements HolderAttachment 
     public abstract Vector3f compassNormToNode(BeaconNode node);
 
     @Shadow public abstract boolean isInNetwork();
+
+    @Shadow public abstract void serverTick();
 
     @Unique
     private static final int TICKS_TO_JUMP = 230;
@@ -162,13 +174,19 @@ public abstract class PlayerTransportComponentMixin implements HolderAttachment 
                     }
 
                     if (this.nearest != null) {
+                        if (this.gateTicks % 40 == 0) {
+                            this.serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_BEACON_AMBIENT), SoundCategory.BLOCKS,
+                                    serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), 0.8f, 2f, 0l));
+                        }
                         ++this.gateTicks;
+
                     }
                 } else {
                     this.gateTicks = 0;
                     this.nearest = null;
                     //this.audioManager.stopJump();
                     //this.spawnOrientationParticles();
+                    this.serverPlayer.networkHandler.sendPacket(new StopSoundS2CPacket(SoundEvents.BLOCK_BEACON_AMBIENT.getId(), SoundCategory.BLOCKS));
                 }
                 var helpColr = 7368816;
 
@@ -260,14 +278,33 @@ public abstract class PlayerTransportComponentMixin implements HolderAttachment 
      */
     @Overwrite
     public void sendExplosionPacketS2C(boolean skipOurselves, BlockPos pos, int color) {
+        var list = new ArrayList<Packet<ClientPlayPacketListener>>();
+        var id = VirtualEntityUtils.requestEntityId();
+        list.add(new EntitySpawnS2CPacket(id, UUID.randomUUID(),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0, EntityType.FIREWORK_ROCKET, 0, Vec3d.ZERO, 0));
+
+        {
+            var stack = new ItemStack(Items.FIREWORK_ROCKET);
+            stack.getOrCreateNbt().put(FireworkRocketItem.FIREWORKS_KEY, TransportEffects.makeTransportFirework(color));
+            list.add(new EntityTrackerUpdateS2CPacket(id, List.of(DataTracker.SerializedEntry.of(FireworkRocketEntityAccessor.getITEM(), stack))));
+        }
+        {
+            var x = PolymerCommonUtils.createUnsafe(EntityStatusS2CPacket.class);
+            ((EntityStatusS2CPacketAccessor) x).setId(id);
+            ((EntityStatusS2CPacketAccessor) x).setStatus(EntityStatuses.EXPLODE_FIREWORK_CLIENT);
+            list.add(x);
+        }
+        list.add(new EntitiesDestroyS2CPacket(id));
+
+        var b = new BundleS2CPacket(list);
+
         for (var player : this.player.getWorld().getPlayers()) {
             if (skipOurselves && player == this.player) {
                 continue;
             }
 
             if (player instanceof ServerPlayerEntity serverPlayer && this.player.getPos().isInRange(player.getPos(), 32.0)) {
-                serverPlayer.networkHandler.sendPacket(new ExplosionS2CPacket(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 3, List.of(),
-                        Vec3d.ZERO, Explosion.DestructionType.KEEP, ParticleTypes.FIREWORK, ParticleTypes.FIREWORK, SoundEvents.INTENTIONALLY_EMPTY));
+                serverPlayer.networkHandler.sendPacket(b);
             }
         }
     }

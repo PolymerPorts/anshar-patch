@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.5-SNAPSHOT'
 	id 'maven-publish'
+	id "com.modrinth.minotaur" version "2.+"
 }
 
 version = project.mod_version
@@ -44,9 +45,7 @@ dependencies {
 	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.4.0"
 	modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:20.4.2"
 
-	modImplementation 'eu.pb4:polymer-resource-pack:0.7.5+1.20.4'
-	modImplementation 'eu.pb4:polymer-autohost:0.7.5+1.20.4'
-	modImplementation include('eu.pb4:polymer-virtual-entity:0.7.5+1.20.4')
+	modImplementation include('eu.pb4:polymer-virtual-entity:0.7.6+1.20.4')
 	modImplementation include("xyz.nucleoid:server-translations-api:2.2.0+1.20.3-rc1")
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
@@ -97,5 +96,26 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+	}
+}
+
+if (System.getenv("MODRINTH")) {
+	modrinth {
+		token = System.getenv("MODRINTH")
+		projectId = 'wHXli9kE'// The ID of your modrinth project, slugs will not work.
+		versionNumber = "" + version // The version of the mod to upload.
+		versionType = "release"
+		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+		gameVersions = [((String) project.minecraft_version)]
+		changelog = System.getenv("CHANGELOG")
+		loaders = ["fabric", "quilt"]
+
+		dependencies {
+			required.project "anshar"
+		}
+	}
+
+	remapJar {
+		finalizedBy project.tasks.modrinth
 	}
 }

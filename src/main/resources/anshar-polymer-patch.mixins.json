@@ -4,8 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "DisableComponentSyncMixin",
+    "EntityStatusS2CPacketAccessor",
+    "FileResourcePackProviderAccessor",
+    "FireworkRocketEntityAccessor",
     "ModRegistriationMixin",
     "PlayerTransportComponentMixin",
+    "ResourcePackManagerMixin",
     "ServerPlayerEntityMixin",
     "TransportEffectsMixin"
   ],
