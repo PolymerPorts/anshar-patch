@@ -104,7 +104,7 @@ if (System.getenv("MODRINTH")) {
 		token = System.getenv("MODRINTH")
 		projectId = 'wHXli9kE'// The ID of your modrinth project, slugs will not work.
 		versionNumber = "" + version // The version of the mod to upload.
-		versionType = "release"
+		versionType = "alpha"
 		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
 		gameVersions = [((String) project.minecraft_version)]
 		changelog = System.getenv("CHANGELOG")
