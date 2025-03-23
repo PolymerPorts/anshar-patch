@@ -7,11 +7,14 @@
 	"authors": [
 		"Patbox"
 	],
+	"contibutors": [
+		"unilock"
+	],
 	"contact": {
-		"homepage": "https://pb4.eu",
+		"homepage": "https://pb4.eu/",
 		"sources": "https://github.com/PolymerPorts/anshar-patch"
 	},
-	"license": "LGPLv3",
+	"license": "LGPL-3.0-only",
 	"icon": "assets/anshar-polymer-patch/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -24,9 +27,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.0",
-		"anshar": ">=0.0.15",
-		"minecraft": "~1.20.4",
-		"java": ">=17",
+		"minecraft": "~1.21",
+		"anshar": ">=1.0.0",
 		"fabric-api": "*"
 	}
 }
